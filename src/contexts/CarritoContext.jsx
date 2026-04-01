@@ -1,9 +1,12 @@
 import { createContext, useContext, useState } from "react";
+import client from "../api/client";
 
 export const CarritoContext = createContext();
 
 export function CarritoProvider({ children }) {
   const [productos, setProductos] = useState([]);
+  const [pedidoError, setPedidoError] = useState(null);
+  const [pedidoExitoso, setPedidoExitoso] = useState(false);
 
   const agregarProducto = (producto) => {
     setProductos((prev) => {
@@ -17,6 +20,14 @@ export function CarritoProvider({ children }) {
     });
   };
 
+  const disminuirProducto = (id) => {
+    setProductos((prev) =>
+      prev
+        .map((p) => p.id === id ? { ...p, cantidad: p.cantidad - 1 } : p)
+        .filter((p) => p.cantidad > 0)
+    );
+  };
+
   const eliminarProducto = (id) => {
     setProductos((prev) => prev.filter((p) => p.id !== id));
   };
@@ -25,9 +36,28 @@ export function CarritoProvider({ children }) {
     setProductos([]);
   };
 
+  const confirmarPedido = async (userId = 1) => {
+    setPedidoError(null);
+    setPedidoExitoso(false);
+    try {
+      await client.post("/orders", {
+        userId,
+        items: productos.map((p) => ({
+          productId: p.id,
+          quantity: p.cantidad,
+        })),
+      });
+      vaciarCarrito();
+      setPedidoExitoso(true);
+      setTimeout(() => setPedidoExitoso(false), 4000);
+    } catch {
+      setPedidoError("No se pudo confirmar el pedido. Intente nuevamente.");
+    }
+  };
+
   return (
     <CarritoContext.Provider
-      value={{ productos, agregarProducto, eliminarProducto, vaciarCarrito }}
+      value={{ productos, agregarProducto, disminuirProducto, eliminarProducto, vaciarCarrito, confirmarPedido, pedidoError, pedidoExitoso }}
     >
       {children}
     </CarritoContext.Provider>

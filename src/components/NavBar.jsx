@@ -13,22 +13,55 @@ function NavBar() {
   };
 
   return (
-    <header className="bg-light border-bottom shadow-sm">
-      <div className="container d-flex justify-content-between align-items-center py-3">
-        <Link to="/" className="text-decoration-none h5 text-dark">Mi eCommerce</Link>
-        <div className="d-flex gap-3">
-          {user ? (
-            <>
-              <span className="text-muted">Hola, {user}</span>
-              <button onClick={handleLogout} className="btn btn-outline-secondary">Logout</button>
-            </>
-          ) : (
-            <Link to="/login" className="btn btn-outline-primary">Login</Link>
-          )}
-          <Link to="/cart" className="btn btn-outline-primary">
-			Carrito ({productos?.length || 0})
-          </Link>
-        </div>
+    <header className="bg-dark border-bottom shadow-sm">
+      <div className="container">
+        <nav className="navbar navbar-expand-lg navbar-dark bg-dark">
+          <Link className="navbar-brand fw-bold" to="/">TechLab</Link>
+          <button
+            className="navbar-toggler"
+            type="button"
+            data-bs-toggle="collapse"
+            data-bs-target="#mainNav"
+          >
+            <span className="navbar-toggler-icon"></span>
+          </button>
+          <div className="collapse navbar-collapse" id="mainNav">
+            <ul className="navbar-nav me-auto mb-2 mb-lg-0">
+              <li className="nav-item">
+                <Link className="nav-link" to="/gestion-productos">1. Productos</Link>
+              </li>
+              <li className="nav-item">
+                <Link className="nav-link" to="/categorias">2. Categorías</Link>
+              </li>
+              <li className="nav-item">
+                <Link className="nav-link" to="/cart">3. Carrito ({productos?.length || 0})</Link>
+              </li>
+              <li className="nav-item">
+                <Link className="nav-link" to="/cart">4. Realizar Pedido</Link>
+              </li>
+              <li className="nav-item">
+                <Link className="nav-link" to="/historial">5. Historial</Link>
+              </li>
+              {user && (
+                <li className="nav-item">
+                  <Link className="nav-link" to="/admin">6. Administración</Link>
+                </li>
+              )}
+            </ul>
+            <div className="d-flex gap-2 align-items-center">
+              {user ? (
+                <>
+                  <span className="text-light small">Hola, {user}</span>
+                  <button onClick={handleLogout} className="btn btn-outline-light btn-sm">
+                    7. Salir
+                  </button>
+                </>
+              ) : (
+                <Link to="/login" className="btn btn-outline-light btn-sm">Login</Link>
+              )}
+            </div>
+          </div>
+        </nav>
       </div>
     </header>
   );

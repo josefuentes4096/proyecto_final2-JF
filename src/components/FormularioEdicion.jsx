@@ -1,6 +1,6 @@
 import { useEffect, useState } from "react";
 import { useNavigate, useParams } from "react-router-dom";
-import axios from "axios";
+import client from "../api/client";
 
 export default function FormularioEdicion() {
   const [producto, setProducto] = useState(null);
@@ -9,12 +9,8 @@ export default function FormularioEdicion() {
   const navigate = useNavigate();
   const { id } = useParams();
 
-  //const API_URL = "https://64fa12a34096a6f0c9e783e5.mockapi.io/productos";
-  const API_URL = "https://68100dc827f2fdac24102255.mockapi.io/productos";
-
-
   useEffect(() => {
-    axios.get(`${API_URL}/${id}`)
+    client.get(`/products/${id}`)
       .then((res) => {
         setProducto(res.data);
         setCargando(false);
@@ -31,12 +27,19 @@ export default function FormularioEdicion() {
 
   const handleSubmit = (e) => {
     e.preventDefault();
-    if (!producto.nombre.trim() || producto.descripcion.length < 10 || parseFloat(producto.precio) <= 0) {
+    if (!producto.name.trim() || producto.description.length < 10 || parseFloat(producto.price) <= 0) {
       return setError("Complete todos los campos correctamente.");
     }
 
     setCargando(true);
-    axios.put(`${API_URL}/${id}`, producto)
+    client.put(`/products/${id}`, {
+      name: producto.name,
+      price: parseFloat(producto.price),
+      description: producto.description,
+      imageUrl: producto.imageUrl,
+      category: producto.category,
+      stock: parseInt(producto.stock),
+    })
       .then(() => navigate("/admin"))
       .catch(() => setError("Error al actualizar el producto."))
       .finally(() => setCargando(false));
@@ -52,19 +55,27 @@ export default function FormularioEdicion() {
         <form onSubmit={handleSubmit}>
           <div className="mb-3">
             <label>Nombre</label>
-            <input name="nombre" className="form-control" value={producto.nombre} onChange={handleChange} />
+            <input name="name" className="form-control" value={producto.name} onChange={handleChange} />
           </div>
           <div className="mb-3">
             <label>Precio</label>
-            <input name="precio" type="number" className="form-control" value={producto.precio} onChange={handleChange} />
+            <input name="price" type="number" className="form-control" value={producto.price} onChange={handleChange} />
           </div>
           <div className="mb-3">
             <label>Descripción</label>
-            <textarea name="descripcion" className="form-control" value={producto.descripcion} onChange={handleChange} />
+            <textarea name="description" className="form-control" value={producto.description} onChange={handleChange} />
+          </div>
+          <div className="mb-3">
+            <label>Categoría</label>
+            <input name="category" className="form-control" value={producto.category} onChange={handleChange} />
+          </div>
+          <div className="mb-3">
+            <label>Stock</label>
+            <input name="stock" type="number" className="form-control" value={producto.stock} onChange={handleChange} />
           </div>
           <div className="mb-3">
             <label>URL Imagen</label>
-            <input name="imagen" className="form-control" value={producto.imagen} onChange={handleChange} />
+            <input name="imageUrl" className="form-control" value={producto.imageUrl ?? ""} onChange={handleChange} />
           </div>
           <button type="submit" className="btn btn-success" disabled={cargando}>
             {cargando ? "Guardando..." : "Guardar Cambios"}

@@ -1,20 +1,23 @@
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
-import axios from "axios";
+import client from "../api/client";
 
 export default function FormularioProducto() {
-  const [nombre, setNombre] = useState("");
-  const [precio, setPrecio] = useState("");
-  const [descripcion, setDescripcion] = useState("");
-  const [imagen, setImagen] = useState("");
+  const [name, setName] = useState("");
+  const [price, setPrice] = useState("");
+  const [description, setDescription] = useState("");
+  const [imageUrl, setImageUrl] = useState("");
+  const [category, setCategory] = useState("");
+  const [stock, setStock] = useState("");
   const [error, setError] = useState("");
   const [cargando, setCargando] = useState(false);
   const navigate = useNavigate();
 
   const validar = () => {
-    if (!nombre.trim()) return "El nombre es obligatorio.";
-    if (parseFloat(precio) <= 0) return "El precio debe ser mayor a 0.";
-    if (descripcion.length < 10) return "La descripción debe tener al menos 10 caracteres.";
+    if (!name.trim()) return "El nombre es obligatorio.";
+    if (parseFloat(price) <= 0) return "El precio debe ser mayor a 0.";
+    if (description.length < 10) return "La descripción debe tener al menos 10 caracteres.";
+    if (parseInt(stock) < 0) return "El stock no puede ser negativo.";
     return null;
   };
 
@@ -27,14 +30,16 @@ export default function FormularioProducto() {
     setError("");
 
     try {
-      await axios.post("https://64fa12a34096a6f0c9e783e5.mockapi.io/productos", {
-        nombre,
-        precio: parseFloat(precio),
-        descripcion,
-        imagen
+      await client.post("/products", {
+        name,
+        price: parseFloat(price),
+        description,
+        imageUrl,
+        category,
+        stock: parseInt(stock),
       });
       navigate("/admin");
-    } catch (e) {
+    } catch {
       setError("Error al crear el producto. Intente nuevamente.");
     } finally {
       setCargando(false);
@@ -47,20 +52,28 @@ export default function FormularioProducto() {
       {error && <div className="alert alert-danger">{error}</div>}
       <form onSubmit={handleSubmit}>
         <div className="mb-3">
-          <label>Nombre</label>
-          <input className="form-control" value={nombre} onChange={e => setNombre(e.target.value)} />
+          <label htmlFor="name">Nombre</label>
+          <input id="name" className="form-control" value={name} onChange={e => setName(e.target.value)} />
         </div>
         <div className="mb-3">
-          <label>Precio</label>
-          <input type="number" className="form-control" value={precio} onChange={e => setPrecio(e.target.value)} />
+          <label htmlFor="price">Precio</label>
+          <input id="price" type="number" className="form-control" value={price} onChange={e => setPrice(e.target.value)} />
         </div>
         <div className="mb-3">
-          <label>Descripción</label>
-          <textarea className="form-control" value={descripcion} onChange={e => setDescripcion(e.target.value)} />
+          <label htmlFor="description">Descripción</label>
+          <textarea id="description" className="form-control" value={description} onChange={e => setDescription(e.target.value)} />
         </div>
         <div className="mb-3">
-          <label>URL de imagen (opcional)</label>
-          <input className="form-control" value={imagen} onChange={e => setImagen(e.target.value)} />
+          <label htmlFor="category">Categoría</label>
+          <input id="category" className="form-control" value={category} onChange={e => setCategory(e.target.value)} />
+        </div>
+        <div className="mb-3">
+          <label htmlFor="stock">Stock</label>
+          <input id="stock" type="number" className="form-control" value={stock} onChange={e => setStock(e.target.value)} />
+        </div>
+        <div className="mb-3">
+          <label htmlFor="imageUrl">URL de imagen (opcional)</label>
+          <input id="imageUrl" className="form-control" value={imageUrl} onChange={e => setImageUrl(e.target.value)} />
         </div>
         <button type="submit" className="btn btn-primary" disabled={cargando}>
           {cargando ? "Guardando..." : "Guardar"}

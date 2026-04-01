@@ -1,40 +1,37 @@
 import { useEffect, useState } from "react";
+import { useNavigate } from "react-router-dom";
 import ProductCard from "./ProductCard";
+import client from "../api/client";
 
-function ProductList({ addToCart, category, modo = "publico" }) {
+function ProductList({ category, modo = "publico" }) {
   const [productos, setProductos] = useState([]);
   const [error, setError] = useState(null);
   const [cargando, setCargando] = useState(true);
+  const navigate = useNavigate();
 
   useEffect(() => {
-    let url = "https://68100d8b27f2fdac24101ef5.mockapi.io/productos";
-    if (category) {
-      url += `?categoria=${category}`;
-    }
+    const url = category
+      ? `/products/category/${category}`
+      : "/products";
 
-    fetch(url)
+    client.get(url)
       .then((res) => {
-        if (!res.ok) throw new Error("Error al cargar productos");
-        return res.json();
-      })
-      .then((data) => {
-        setProductos(data);
+        setProductos(res.data.content);
         setError(null);
       })
-      .catch((err) => setError(err.message))
+      .catch(() => setError("Error al cargar productos"))
       .finally(() => setCargando(false));
   }, [category]);
 
   const handleEliminar = (id) => {
     if (!window.confirm("¿Seguro que desea eliminar este producto?")) return;
-    fetch(`https://6596e1c96bb4ec36ca02b81b.mockapi.io/productos/${id}`, {
-      method: "DELETE",
-    })
-      .then((res) => {
-        if (!res.ok) throw new Error("Error al eliminar");
-        setProductos(productos.filter((prod) => prod.id !== id));
-      })
-      .catch((err) => setError(err.message));
+    client.delete(`/products/${id}`)
+      .then(() => setProductos(productos.filter((prod) => prod.id !== id)))
+      .catch(() => setError("Error al eliminar"));
+  };
+
+  const handleEditar = (producto) => {
+    navigate(`/admin/editarProducto/${producto.id}`);
   };
 
   if (cargando) return <p>Cargando productos...</p>;
@@ -44,15 +41,14 @@ function ProductList({ addToCart, category, modo = "publico" }) {
   return (
     <div className="row g-4">
       {productos.map((producto) => (
-		<div className="col-sm-6 col-md-4 col-lg-3">
-        <ProductCard
-          key={producto.id}
-          producto={producto}
-          modo={modo}
-          addToCart={addToCart}
-          onDelete={handleEliminar}
-        />
-		</div>
+        <div key={producto.id} className="col-sm-6 col-md-4 col-lg-3">
+          <ProductCard
+            producto={producto}
+            modo={modo}
+            onDelete={handleEliminar}
+            onEdit={handleEditar}
+          />
+        </div>
       ))}
     </div>
   );
